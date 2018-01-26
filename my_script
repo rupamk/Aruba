@@ -1,0 +1,65 @@
+#!/bin/bash
+# Aruba Filtering 
+
+# Find the unique MAC list
+awk '{print $1,$2,$3,$4,$9,$13,$14}' data.txt>temp
+grep -n 'username=' temp>outputfile
+awk '{print $1,$2,$3,$4,$5,$6,$7}' outputfile>filter
+rm outputfile
+rm temp
+sed -i -- 's/>//g' filter
+sed -i -- 's/username=//g' filter
+awk '{print $6,$7}' filter>mac_add_list
+sort mac_add_list | uniq>mac_list
+ sed -i -- 's/userip=//g' mac_list
+ sed -i -- 's/MAC=//g' mac_list
+awk '{print $2}' mac_list>mac_proc
+
+# Find all the AP name list
+ awk '{print $1,$2,$3,$4,$5,$9,$13,$14}' data.txt>temp
+ sed -i -- 's/>//g' temp
+ sed -i -- 's/username=//g' temp
+ grep -n 'stm' temp>outputfile
+rm temp
+
+# Create a Database
+echo "-------- The Database For all Users and All devices-------" > Database
+echo "------------------------------------------------------------" >> Database
+echo "------------------------------------------------------------" >> Database
+# Removing the occurences of 0.0.0.0 ... Need to check
+sed -n '/0.0.0.0/!p' mac_list>mac_list1
+# Grep the AP occurences against each MAC address from the file created previously
+ nol=$(sed -n '$=' mac_list1)
+
+ x=1
+ while  [ $x -le $nol ]
+ do
+ line=$(sed -n "$x"p mac_list1)
+userid=$(awk 'BEGIN {
+	split(ARGV[1], t, " ")
+	print t[1]
+	}' "$line")
+MAC=$(awk 'BEGIN {
+	split(ARGV[1], t, " ")
+	print t[2]
+	}' "$line")	
+	echo 'Device MAC Address ='$MAC 'and User id='$userid >> Database
+	echo "-------------------AP Associated----------------------------" >> Database
+grep -n $MAC outputfile>new
+awk '{print $6}' new>temp
+sort temp | uniq >> Database 
+echo "------------------------------------------------------------" >> Database
+ x=$(( $x + 1 ))
+  rm new
+ rm temp
+ done
+ 
+ 
+# remove all files except Database
+rm filter
+rm mac_add_list
+rm mac_proc
+rm outputfile
+rm mac_list1
+rm mac_list--
+rm temp--
