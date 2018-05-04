@@ -12,3 +12,8 @@
 * Note: data.txt is a sample collected file.
 
 
+
+
+***Note: WiFi log is not included here due to privacy concerns***
+
+
